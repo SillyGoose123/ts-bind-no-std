@@ -1,10 +1,12 @@
 use super::ts_map::ts_rs_map;
 use crate::{parsers::struc::ParsedField, struct_attrs::StructAttrs};
+use crate::config::Config;
 
 pub fn gen_ts_code(
     struct_name: &str,
     fields: &Vec<ParsedField>,
     struct_attrs: &StructAttrs,
+    config: &Config
 ) -> anyhow::Result<String> {
     let mut ts_bind = String::from(format!("\nexport interface {} {{\n", struct_name));
     let mut imports = Vec::new();
@@ -15,6 +17,8 @@ pub fn gen_ts_code(
 
         let field_name = if let Some(rename_all) = struct_attrs.get_rename_all() {
             rename_all.to_case(&ident.to_string())
+        } else if let Some(rename_all) = &config.default_case  {
+          rename_all.to_case(&ident.to_string())
         } else {
             ident.to_string()
         };

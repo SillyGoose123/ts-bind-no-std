@@ -1,6 +1,7 @@
 use convert_case::{Case, Casing};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RenameAll {
     CamelCase,
     SnakeCase,
