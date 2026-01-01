@@ -1,5 +1,6 @@
-use quote::quote;
-use syn::Type;
+use quote::{quote, ToTokens};
+use std::iter;
+use syn::{Expr, ExprLit, Lit, PathArguments, Type, TypeArray, TypePath};
 
 pub fn ts_rs_map(token: &Type, imports: &mut Vec<String>) -> String {
     let mapped = match token {
@@ -34,9 +35,10 @@ pub fn ts_rs_map(token: &Type, imports: &mut Vec<String>) -> String {
         }
         Type::Path(type_path) if type_path.path.is_ident("bool") => "boolean".to_string(),
         Type::Path(type_path) if is_vec(type_path) => {
-            let inner = unwrap_vec(type_path);
+            let inner = read_last_seg(type_path).expect("Could not get last segment");
             format!("({})[]", ts_rs_map(&inner, imports))
         }
+        Type::Array(type_path) => format!("[{}]", unwrapped_fixed_array(type_path, imports)),
         Type::Path(type_path) if is_hashmap(type_path) => {
             let (key, value) = unwrap_hashmap(type_path);
 
@@ -56,7 +58,7 @@ pub fn ts_rs_map(token: &Type, imports: &mut Vec<String>) -> String {
     mapped
 }
 
-fn is_option(type_path: &syn::TypePath) -> bool {
+fn is_option(type_path: &TypePath) -> bool {
     type_path
         .path
         .segments
@@ -65,21 +67,11 @@ fn is_option(type_path: &syn::TypePath) -> bool {
         .unwrap_or(false)
 }
 
-fn unwrap_option(type_path: &syn::TypePath) -> syn::Type {
-    let last_segment = type_path
-        .path
-        .segments
-        .last()
-        .expect("Could not get last segment");
-    if let syn::PathArguments::AngleBracketed(args) = &last_segment.arguments {
-        if let Some(syn::GenericArgument::Type(ty)) = args.args.first() {
-            return ty.clone();
-        }
-    }
-    panic!("Could not unwrap option");
+fn unwrap_option(type_path: &TypePath) -> Type {
+    read_last_seg(type_path).expect("Could not unwrap option")
 }
 
-fn is_vec(type_path: &syn::TypePath) -> bool {
+fn is_vec(type_path: &TypePath) -> bool {
     type_path
         .path
         .segments
@@ -88,7 +80,7 @@ fn is_vec(type_path: &syn::TypePath) -> bool {
         .unwrap_or(false)
 }
 
-fn unwrap_vec(type_path: &syn::TypePath) -> syn::Type {
+fn read_last_seg(type_path: &TypePath) -> Option<Type> {
     let last_segment = type_path
         .path
         .segments
@@ -96,13 +88,13 @@ fn unwrap_vec(type_path: &syn::TypePath) -> syn::Type {
         .expect("Could not get last segment");
     if let syn::PathArguments::AngleBracketed(args) = &last_segment.arguments {
         if let Some(syn::GenericArgument::Type(ty)) = args.args.first() {
-            return ty.clone();
+            return Some(ty.clone());
         }
     }
-    panic!("Could not unwrap Vec");
+    None
 }
 
-fn is_hashmap(type_path: &syn::TypePath) -> bool {
+fn is_hashmap(type_path: &TypePath) -> bool {
     type_path
         .path
         .segments
@@ -111,13 +103,13 @@ fn is_hashmap(type_path: &syn::TypePath) -> bool {
         .unwrap_or(false)
 }
 
-fn unwrap_hashmap(type_path: &syn::TypePath) -> (syn::Type, syn::Type) {
+fn unwrap_hashmap(type_path: &TypePath) -> (Type, Type) {
     let last_segment = type_path
         .path
         .segments
         .last()
         .expect("Could not get last segment");
-    if let syn::PathArguments::AngleBracketed(args) = &last_segment.arguments {
+    if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
         if args.args.len() == 2 {
             if let (
                 Some(syn::GenericArgument::Type(key)),
@@ -129,6 +121,25 @@ fn unwrap_hashmap(type_path: &syn::TypePath) -> (syn::Type, syn::Type) {
         }
     }
     panic!("Could not unwrap HashMap");
+}
+
+fn unwrapped_fixed_array(type_array: &TypeArray, imports: &mut Vec<String>) -> String {
+    iter::repeat_n(ts_rs_map(type_array.elem.as_ref(), imports), expr_to_usize(&type_array.len).unwrap())
+        .collect::<Vec<String>>()
+        .join(", ")
+        .to_string()
+}
+
+fn expr_to_usize(expr: &Expr) -> syn::Result<usize> {
+    if let Expr::Lit(ExprLit {
+        lit: Lit::Int(lit_int),
+        ..
+    }) = expr
+    {
+        Ok(lit_int.base10_parse::<usize>()?)
+    } else {
+        Err(syn::Error::new_spanned(expr, "Expected integer literal"))
+    }
 }
 
 #[cfg(test)]
