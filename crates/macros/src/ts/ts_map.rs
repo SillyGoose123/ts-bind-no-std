@@ -1,4 +1,4 @@
-use quote::{quote, ToTokens};
+use quote::quote;
 use std::iter;
 use syn::{Expr, ExprLit, Lit, PathArguments, Type, TypeArray, TypePath};
 

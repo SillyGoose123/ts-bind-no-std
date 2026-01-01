@@ -8,8 +8,7 @@ pub enum RenameAll {
     UpperCase,
     LowerCase,
     PascalCase,
-    // TODO: kebab
-    //KebabCase,
+    KebabCase,
 }
 
 impl RenameAll {
@@ -20,6 +19,21 @@ impl RenameAll {
             Self::UpperCase => s.to_case(Case::Upper),
             Self::LowerCase => s.to_case(Case::Lower),
             Self::PascalCase => s.to_case(Case::Pascal),
+            Self::KebabCase => s.to_case(Case::Kebab).replace("-", "_"),
+        }
+    }
+
+    pub fn from_string(value: &str) -> Option<Self> {
+        match value {
+            "camelCase" => Some(RenameAll::CamelCase),
+            "snake_case" => Some(RenameAll::SnakeCase),
+            "UPPERCASE" => Some(RenameAll::UpperCase),
+            "lowercase" => Some(RenameAll::LowerCase),
+            "PascalCase" => Some(RenameAll::PascalCase),
+            "kebab_case" => Some(RenameAll::KebabCase),
+            _ => {
+                panic!("Invalid attribute name: .{}.", value);
+            }
         }
     }
 }
