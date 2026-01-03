@@ -2,15 +2,11 @@ use crate::config::Config;
 use crate::files::write_const_file;
 use crate::rename_all::RenameAll;
 use crate::ts::ts_map::ts_rs_map;
-use proc_macro::TokenStream;
-use quote::{ToTokens, quote};
+use quote::ToTokens;
 use std::path::PathBuf;
 use syn::{ItemConst, Meta};
 
-pub fn handle_ts_bind_const(
-    item: ItemConst,
-    meta: Result<Meta, syn::Error>,
-) -> anyhow::Result<TokenStream> {
+pub fn handle_ts_bind_const(item: ItemConst, meta: Result<Meta, syn::Error>) -> anyhow::Result<()> {
     let config = Config::load();
     let mut imports = Vec::new();
 
@@ -38,7 +34,7 @@ pub fn handle_ts_bind_const(
         imports,
         &content,
     )?;
-    Ok(quote! {}.into())
+    Ok(())
 }
 
 fn read_case(meta: Meta) -> Option<RenameAll> {
