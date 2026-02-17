@@ -1,4 +1,4 @@
-use crate::ts::gen_ts_code::FILE_DISCLAIMER;
+
 use std::fmt::Write;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -7,6 +7,8 @@ use std::{
     fs::{create_dir_all, write},
     path::PathBuf,
 };
+use crate::ts::FILE_DISCLAIMER;
+use crate::ts::utils::gen_imports;
 
 pub fn write_to_file(path: &PathBuf, content: &str) -> anyhow::Result<()> {
     let parent = path.parent().ok_or(anyhow::anyhow!(
@@ -27,7 +29,7 @@ pub fn write_const_file(path: &PathBuf, imports: Vec<String>, content: &str) -> 
     builder.write_str("\n\n")?;
 
     if !path.exists() {
-        builder.write_str(imports.join("\n").as_str())?;
+        builder.write_str(&gen_imports(imports, &String::new()))?;
         builder.write_str(content)?;
         return write_to_file(path, builder.trim());
     }

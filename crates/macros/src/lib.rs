@@ -9,7 +9,7 @@ mod error;
 mod files;
 mod parsers;
 mod rename_all;
-mod struct_attrs;
+mod derive_attrs;
 mod ts;
 mod ts_bind;
 mod ts_bind_const;
