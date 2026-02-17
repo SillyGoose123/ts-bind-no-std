@@ -1,16 +1,17 @@
 use syn::Attribute;
 
-use crate::{parsers::struc::get_nested_value, rename_all::RenameAll};
+use crate::rename_all::RenameAll;
 use std::path::PathBuf;
+use crate::parsers::field_attributes::get_nested_value;
 
 #[derive(Debug)]
-pub struct StructAttrs {
+pub struct DeriveAttrs {
   name: String,
   rename_all: Option<RenameAll>,
   export: Option<PathBuf>,
 }
 
-impl StructAttrs {
+impl DeriveAttrs {
   pub fn from(struct_name: String, attrs: &Vec<Attribute>) -> Self {
     let mut struct_attrs = Self {
       name: struct_name,
@@ -74,7 +75,7 @@ impl StructAttrs {
     self.export
       .clone()
       .unwrap_or_else(|| PathBuf::new().join("bindings"))
-      .join(format!("{}.ts", self.get_name()))
+      .join(format!("{}.d.ts", self.get_name()))
   }
 
   pub fn get_rename_all(&self) -> Option<&RenameAll> {

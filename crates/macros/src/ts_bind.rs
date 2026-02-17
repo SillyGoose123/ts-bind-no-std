@@ -1,20 +1,29 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::DeriveInput;
+use syn::{Data, DeriveInput};
 
-use crate::{
-    files::write_to_file, parsers::struc::parse_struct_fields, struct_attrs::StructAttrs,
-    ts::gen_ts_code::gen_ts_code,
-};
 use crate::config::Config;
+use crate::{
+  derive_attrs::DeriveAttrs, files::write_to_file, parsers::p_struct::parse_struct,
+  ts::gen_struct::gen_struct,
+};
+use crate::parsers::p_enum::parse_enum;
+use crate::ts::gen_enum::gen_enum;
 
 pub fn handle_ts_bind(input: &DeriveInput) -> anyhow::Result<TokenStream> {
     let config = Config::load();
-    let struct_attrs = StructAttrs::from(input.ident.to_string(), &input.attrs);
+    let attr = DeriveAttrs::from(input.ident.to_string(), &input.attrs);
 
-    let fields = parse_struct_fields(&input)?;
-    let ts_code = gen_ts_code(struct_attrs.get_name(), &fields, &struct_attrs, &config)?;
-  
-    write_to_file(&config.create_path(&struct_attrs.get_export_path()), &ts_code)?;
+    let code = match &input.data {
+        Data::Struct(data) => gen_struct(
+          &attr,
+          &config,
+          &parse_struct(&data)?,
+        )?,
+        Data::Enum(data) => gen_enum(&attr, &config, parse_enum(&data)?)?,
+        _ => return Ok(quote! {}.into()) //dont gen file
+    };
+
+    write_to_file(&config.create_path(&attr.get_export_path()), &code)?;
     Ok(quote! {}.into())
 }

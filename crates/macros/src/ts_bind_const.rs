@@ -6,6 +6,7 @@ use quote::ToTokens;
 use std::path::PathBuf;
 use syn::{ItemConst, Meta};
 
+
 pub fn handle_ts_bind_const(item: ItemConst, meta: Result<Meta, syn::Error>) -> anyhow::Result<()> {
     let config = Config::load();
     let mut imports = Vec::new();
@@ -21,14 +22,13 @@ pub fn handle_ts_bind_const(item: ItemConst, meta: Result<Meta, syn::Error>) -> 
     } else {
         const_name
     };
-
     let content = format!(
         "export const {}: {} = {};",
         name,
         ts_rs_map(item.ty.as_ref(), &mut imports),
         item.expr.as_ref().to_token_stream().to_string()
     );
-
+  
     write_const_file(
         &config.create_path(&PathBuf::new().join("bindings").join("const.ts")),
         imports,
