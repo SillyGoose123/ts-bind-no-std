@@ -40,8 +40,6 @@ pub fn write_const_file(path: &PathBuf, imports: Vec<String>, content: &str) -> 
     builder.write_str(&file.0.add(&imports.join("\n")))?;
     builder.write_str(&file.1.add(content))?;
 
-    println!("Wrote #{}#", builder.trim());
-
     write_to_file(&path, builder.trim())?;
     Ok(())
 }
