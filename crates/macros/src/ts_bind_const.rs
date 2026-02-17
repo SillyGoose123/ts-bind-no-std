@@ -23,7 +23,7 @@ pub fn handle_ts_bind_const(item: ItemConst, meta: Result<Meta, syn::Error>) -> 
     };
 
     let content = format!(
-        "const {}: {} = {};",
+        "export const {}: {} = {};",
         name,
         ts_rs_map(item.ty.as_ref(), &mut imports),
         item.expr.as_ref().to_token_stream().to_string()
