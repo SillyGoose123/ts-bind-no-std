@@ -9,7 +9,7 @@ pub struct DeriveAttrs {
     name: String,
     rename_all: Option<RenameAll>,
     export: Option<PathBuf>,
-    pub enum_type_export: Option<bool>,
+    enum_type_export: Option<bool>,
 }
 
 impl DeriveAttrs {
