@@ -27,7 +27,7 @@ pub fn gen_enum(
 
     output.push_str("};\n");
 
-    if config.enum_type_export.unwrap_or(false) {
+    if derive_attrs.enum_type_export.unwrap_or(config.enum_type_export.unwrap_or(false)) {
         output.push_str(&format!(
             "\nexport type {0} = typeof {0}[keyof typeof {0}];",
             derive_attrs.get_name()
