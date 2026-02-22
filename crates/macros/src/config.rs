@@ -8,6 +8,7 @@ use std::sync::OnceLock;
 pub struct Config {
     ts_code_gen_path: Option<String>,
     pub default_case: Option<RenameAll>,
+    pub enum_type_export: Option<bool>
 }
 
 static CONFIG: OnceLock<Config> = OnceLock::new();

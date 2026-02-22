@@ -11,22 +11,28 @@ pub fn gen_enum(
 ) -> anyhow::Result<String> {
     let mut output = String::from(format!("\nexport const {} = {{\n", derive_attrs.get_name()));
 
-    for (ident, discriminant, attrs) in &data {
+    for (index, (ident, discriminant, attrs)) in data.iter().enumerate() {
         if attrs.skip {
             continue;
         }
-        println!("TEST {}", ident.to_string());
         output.push_str(&format!(
             "  {}{},\n",
             apply_name_attr(ident.to_string(), derive_attrs, config, attrs),
-            discriminant.clone()
+            discriminant
+                .clone()
                 .map(|f| format!(": {}", f.to_token_stream().to_string()))
-                .unwrap_or(String::new()),
+                .unwrap_or(format!(": {}", index)),
         ));
     }
 
     output.push_str("} as const;\n\n");
-    output.push_str(&format!("export type {0} = typeof {0}[keyof typeof {0}];", derive_attrs.get_name()));
+
+    if config.enum_type_export.unwrap_or(false) {
+        output.push_str(&format!(
+            "export type {0} = typeof {0}[keyof typeof {0}];",
+            derive_attrs.get_name()
+        ));
+    }
 
     Ok(output)
 }
