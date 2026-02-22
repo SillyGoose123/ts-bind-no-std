@@ -86,7 +86,7 @@ fn read_last_seg(type_path: &TypePath) -> Option<Type> {
         .segments
         .last()
         .expect("Could not get last segment");
-    if let syn::PathArguments::AngleBracketed(args) = &last_segment.arguments {
+    if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
         if let Some(syn::GenericArgument::Type(ty)) = args.args.first() {
             return Some(ty.clone());
         }
