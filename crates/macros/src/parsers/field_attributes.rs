@@ -32,7 +32,7 @@ pub(crate) fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<Fiel
             }
             "skip" => {
               field_attrs.skip = true;
-            }
+            },
             _ => {
               panic!("Invalid attribute name: {}", ident_str);
             }
