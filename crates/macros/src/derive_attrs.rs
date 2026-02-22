@@ -71,11 +71,11 @@ impl DeriveAttrs {
     &self.name
   }
 
-  pub fn get_export_path(&self) -> PathBuf {
+  pub fn get_export_path(&self, is_enum: bool) -> PathBuf {
     self.export
       .clone()
       .unwrap_or_else(|| PathBuf::new().join("bindings"))
-      .join(format!("{}.d.ts", self.get_name()))
+      .join(format!("{}{}.ts", self.get_name(), if is_enum { "" } else { ".d" }))
   }
 
   pub fn get_rename_all(&self) -> Option<&RenameAll> {
