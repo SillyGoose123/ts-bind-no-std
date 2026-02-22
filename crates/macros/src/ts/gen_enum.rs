@@ -9,22 +9,24 @@ pub fn gen_enum(
     config: &Config,
     data: Vec<ParsedVariant>,
 ) -> anyhow::Result<String> {
-    let mut output = String::from(format!("\nexport enum {} {{\n", derive_attrs.get_name()));
+    let mut output = String::from(format!("\nexport const {} = {{\n", derive_attrs.get_name()));
 
     for (ident, discriminant, attrs) in &data {
         if attrs.skip {
             continue;
         }
+        println!("TEST {}", ident.to_string());
         output.push_str(&format!(
             "  {}{},\n",
             apply_name_attr(ident.to_string(), derive_attrs, config, attrs),
             discriminant.clone()
-                .map(|f| format!(" = {}", f.to_token_stream().to_string()))
+                .map(|f| format!(": {}", f.to_token_stream().to_string()))
                 .unwrap_or(String::new()),
         ));
     }
 
-    output.push_str("}\n");
+    output.push_str("} as const;\n\n");
+    output.push_str(&format!("export type {0} = typeof {0}[keyof typeof {0}];", derive_attrs.get_name()));
 
     Ok(output)
 }
