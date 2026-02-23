@@ -29,7 +29,7 @@ pub fn gen_enum(
 
     if derive_attrs
         .get_enum_type_export()
-        .unwrap_or(&config.enum_type_export.unwrap_or(false))
+        .unwrap_or(&config.enum_type_export.unwrap_or(true))
         .clone()
     {
         let (imports, type_export) = generate_type_export(derive_attrs, data);
