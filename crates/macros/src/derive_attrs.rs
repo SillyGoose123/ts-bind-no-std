@@ -1,4 +1,4 @@
-use syn::Attribute;
+use syn::{Attribute, LitBool};
 
 use crate::parsers::field_attributes::get_nested_value;
 use crate::rename_all::RenameAll;
@@ -57,13 +57,9 @@ impl DeriveAttrs {
                                 struct_attrs.export = Some(PathBuf::from(value));
                             }
                             "enum_type_export" => {
-                                let value = get_nested_value(&meta)
-                                    .expect("Failed to parse rename attribute");
-                                struct_attrs.enum_type_export = Some(
-                                    value
-                                        .parse()
-                                        .expect("Failed to parse enum_type_export attribute"),
-                                );
+                              let value = meta.value()?;
+                              let s: LitBool = value.parse()?;
+                              struct_attrs.enum_type_export = Some(s.value);
                             }
                             _ => {
                                 panic!("Invalid attribute name: {}", ident_str);
