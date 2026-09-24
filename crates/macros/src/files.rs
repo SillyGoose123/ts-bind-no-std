@@ -39,7 +39,6 @@ pub fn write_const_file(path: &PathBuf, imports: Vec<String>, content: &str) -> 
         return Ok(());
     }
 
-    println!("{content}");
     let re = Regex::new(r"\w+:").expect("Regex creation failed!");
     let find = re.find(&content);
     let write = if find.is_some() {
