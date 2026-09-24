@@ -10,10 +10,9 @@ categories.workspace = true
 
 [dependencies]
 anyhow = "1.0.86"
-convert_case = "0.11.0"
-#proc-macro2 = "1.0"
+convert_case = "0.12.0"
 quote = "1.0"
-syn = { version = "2.0", features = ["full"] }
+syn = { version = "3.0.6", features = ["full"] }
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "1.0.2"
 regex = "1.13.1"
