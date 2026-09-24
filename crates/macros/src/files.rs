@@ -1,4 +1,6 @@
-
+use crate::ts::FILE_DISCLAIMER;
+use crate::ts::utils::gen_imports;
+use regex::Regex;
 use std::fmt::Write;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -7,8 +9,6 @@ use std::{
     fs::{create_dir_all, write},
     path::PathBuf,
 };
-use crate::ts::FILE_DISCLAIMER;
-use crate::ts::utils::gen_imports;
 
 pub fn write_to_file(path: &PathBuf, content: &str) -> anyhow::Result<()> {
     let parent = path.parent().ok_or(anyhow::anyhow!(
@@ -34,13 +34,27 @@ pub fn write_const_file(path: &PathBuf, imports: Vec<String>, content: &str) -> 
         return write_to_file(path, builder.trim());
     }
     let file = split_file_content(path).expect("Failed to read content from file");
-
     if file.1.contains(content) {
+        //files equal skip
         return Ok(());
     }
 
+    println!("{content}");
+    let re = Regex::new(r"\w+:").expect("Regex creation failed!");
+    let find = re.find(&content);
+    let write = if find.is_some() {
+        file.1
+            .lines()
+            .filter(|&line| !line.contains(find.unwrap().as_str()))
+            .collect::<Vec<&str>>()
+            .join("\n")
+    } else {
+        file.1
+    }
+    .add("\n")
+    .add(content);
     builder.write_str(&file.0.add(&imports.join("\n")))?;
-    builder.write_str(&file.1.add(content))?;
+    builder.write_str(&write)?;
 
     write_to_file(&path, builder.trim())?;
     Ok(())
@@ -59,7 +73,7 @@ fn split_file_content(path: &PathBuf) -> anyhow::Result<(String, String)> {
         if line.contains("import") {
             content.push_str(&line);
             content.push('\n');
-            continue
+            continue;
         }
 
         if line.contains("const") {
